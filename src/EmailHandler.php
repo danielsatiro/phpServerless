@@ -39,14 +39,7 @@ class EmailHandler extends SqsHandler
     {
         foreach ($event->getRecords() as $record) {
             try {
-                $body = json_decode($record->getBody(), true);
-
-                // Check if this is a scheduled event
-                if (isset($body['type']) && $body['type'] === 'scheduled') {
-                    $this->handleScheduledEvent($body);
-                } else {
-                    $this->processRecord($record);
-                }
+                $this->processRecord($record);
             } catch (\Throwable $e) {
                 $this->logger->error('Error processing record', [
                     'error' => $e->getMessage(),
@@ -55,82 +48,6 @@ class EmailHandler extends SqsHandler
                 throw $e; // Re-throw to mark the message as failed
             }
         }
-    }
-
-    private function handleScheduledEvent(array $body): void
-    {
-        if ($body['action'] === 'daily-report') {
-            $this->sendDailyReport($body['parameters'] ?? []);
-        }
-    }
-
-    private function sendDailyReport(array $parameters): void
-    {
-        $name = $parameters['name'] ?? 'Admin';
-        $email = $parameters['email'] ?? 'admin@example.com';
-
-        // Here you would typically:
-        // 1. Generate daily statistics/report
-        // 2. Format the report
-        // 3. Send it via email
-        $reportData = $this->generateDailyReport();
-
-        $params = [
-            'from'    => $this->fromEmail,
-            'to'      => $email,
-            'subject' => 'Daily Report - ' . date('Y-m-d'),
-            'html'    => $this->getDailyReportTemplate($name, $reportData)
-        ];
-
-        $this->logger->info('Sending daily report', ['to' => $email]);
-
-        try {
-            $result = $this->mailgun->messages()->send($this->domain, $params);
-            $this->logger->info('Daily report sent successfully', [
-                'messageId' => $result->getId(),
-                'to' => $params['to']
-            ]);
-        } catch (\Throwable $e) {
-            $this->logger->error('Failed to send daily report', [
-                'error' => $e->getMessage(),
-                'to' => $params['to']
-            ]);
-            throw $e;
-        }
-    }
-
-    private function generateDailyReport(): array
-    {
-        // Example report generation
-        return [
-            'date' => date('Y-m-d'),
-            'metrics' => [
-                'total_requests' => rand(100, 1000),
-                'successful_emails' => rand(90, 950),
-                'failed_emails' => rand(0, 50)
-            ]
-        ];
-    }
-
-    private function getDailyReportTemplate(string $name, array $reportData): string
-    {
-        return "
-            <html>
-            <body>
-                <h1>Daily Report - {$reportData['date']}</h1>
-                <p>Hello {$name},</p>
-                <p>Here is your daily report summary:</p>
-                <ul>
-                    <li>Total Requests: {$reportData['metrics']['total_requests']}</li>
-                    <li>Successful Emails: {$reportData['metrics']['successful_emails']}</li>
-                    <li>Failed Emails: {$reportData['metrics']['failed_emails']}</li>
-                </ul>
-                <p>For more details, visit our <a href=\"{$this->link}\">dashboard</a>.</p>
-                <hr>
-                <p><small>This is an automated report.</small></p>
-            </body>
-            </html>
-        ";
     }
 
     private function processRecord(SqsRecord $record): void

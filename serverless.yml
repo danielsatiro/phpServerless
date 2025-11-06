@@ -34,6 +34,18 @@ provider:
               - Fn::GetAtt:
                     - MyQueue
                     - Arn
+#        - Effect: Allow
+#          Action:
+#              - s3:GetObject
+#              - s3:PutObject
+#              - s3:DeleteObject
+#              - s3:ListBucket
+#          Resource:
+#              - arn:aws:s3:::${self:custom.bucketName}/*
+#              - arn:aws:s3:::${self:custom.bucketName}
+#
+#custom:
+#    bucketName: app-dev-uploads-${aws:accountId}
 
 plugins:
     - ./vendor/bref/bref
@@ -72,6 +84,14 @@ functions:
                     Fn::GetAtt:
                         - MyQueue
                         - Arn
+
+    scheduled-email:
+        handler: src/ScheduledEmailHandler.php
+        description: 'Handles scheduled email tasks like daily reports'
+        runtime: php-82
+        timeout: 10 # in seconds
+        memorySize: 128 # in MB
+        events:
             # Uncomment and adjust the schedule examples below as needed:
             # Run at 8 AM UTC every day
             # - schedule: cron(0 8 * * ? *)
@@ -87,7 +107,7 @@ functions:
             #     rate: cron(0 11 * * ? *)
             #     timezone: America/Sao_Paulo
 
-            # Run with input parameters
+            # Run with input parameters for daily report
             # - schedule:
             #     rate: cron(0 12 * * ? *)
             #     input:
@@ -96,6 +116,21 @@ functions:
             #         parameters:
             #             name: "summary"
             #             email: "admin@example.com"
+
+    # Example S3 processor function
+    # s3-processor:
+    #     handler: src/S3Handler.php
+    #     description: 'Process files uploaded to S3'
+    #     runtime: php-82
+    #     timeout: 30
+    #     memorySize: 256
+    #     events:
+    #         - s3:
+    #             bucket: ${self:custom.bucketName}
+    #             event: s3:ObjectCreated:*
+    #             rules:
+    #                 - prefix: uploads/
+    #                 - suffix: .csv
 
 # Exclude files from deployment
 package:
@@ -111,3 +146,15 @@ resources:
             Type: AWS::SQS::Queue
             Properties:
                 QueueName: app-dev-hello-queue
+
+        # Example S3 bucket configuration
+        # UploadBucket:
+        #     Type: AWS::S3::Bucket
+        #     Properties:
+        #         BucketName: ${self:custom.bucketName}
+        #         CorsConfiguration:
+        #             CorsRules:
+        #                 - AllowedHeaders: ['*']
+        #                   AllowedMethods: [GET, PUT, POST, DELETE]
+        #                   AllowedOrigins: ['*']
+        #                   MaxAge: 3000
