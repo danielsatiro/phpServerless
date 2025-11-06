@@ -1,0 +1,61 @@
+# PHP
+/vendor/
+composer.phar
+*.log
+
+# PHPUnit
+.phpunit.result.cache
+/phpunit.xml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE - PHPStorm, VS Code, etc
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node - for Serverless Framework
+node_modules/
+npm-debug.log
+
+# AWS
+.aws/
+.serverless/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+/var/log/*
+!/var/log/.gitkeep
+/var/cache/*
+!/var/cache/.gitkeep
+
+# Docker
+docker-compose.override.yml
+
+# Build artifacts
+/build/
+/dist/
+.webpack/
+
+# Test coverage
+/coverage/
+.php_cs.cache
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.cache

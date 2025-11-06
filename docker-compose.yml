@@ -1,0 +1,29 @@
+version: '3.3'
+services:
+    php:
+        build: ./docker/php-fpm
+        ports:
+            - "9002:9000"
+        volumes:
+            - .:/var/www/api:cached
+            - ./docker/var/log/api:/var/www/api/var/log:cached
+        extra_hosts:
+            - "docker.host:127.0.0.1"
+        networks:
+            - internal
+    nginx:
+        build: ./docker/nginx
+        ports:
+            - "80:80"
+        links:
+            - php
+        volumes:
+            - .:/var/www/api:cached
+            - ./docker/var/log/nginx/:/var/log/nginx:cached
+        networks:
+            - internal
+
+networks:
+    internal:
+        driver: bridge
+

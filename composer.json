@@ -1,0 +1,29 @@
+{
+    "name": "serverless/php",
+    "description": "PHP Serverless",
+    "type": "project",
+    "require": {
+        "bref/bref": "^2.4",
+        "aws/aws-sdk-php": "^3.356",
+        "monolog/monolog": "^3.9",
+        "mailgun/mailgun-php": "^4.3",
+        "symfony/http-client": "^7.3",
+        "nyholm/psr7": "^1.8",
+        "symfony/dotenv": "^7.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Serverless\\Php\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Daniel Sátiro"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}

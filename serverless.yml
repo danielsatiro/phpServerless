@@ -1,0 +1,113 @@
+service: app
+
+# Set your team ID if you are using Bref Cloud
+#bref:
+#    team: my-team-id
+
+provider:
+    name: aws
+    region: sa-east-1
+    environment:
+        MAILGUN_API_KEY: ${ssm:/aws/reference/secretsmanager/app/mailgun/api-key}
+        FROM_EMAIL: 'daniel@satiro.me'
+        MAILGUN_DOMAIN: 'satiro.me'
+        CONTENT_LINK: 'https://github.com/danielsatiro/phpServerless'
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - lambda:InvokeFunction
+          Resource:
+              - arn:aws:lambda:${self:provider.region}:${aws:accountId}:function:app-dev-bref-hello
+        - Effect: Allow
+          Action:
+              - secretsmanager:GetSecretValue
+          Resource:
+              - arn:aws:secretsmanager:${self:provider.region}:${aws:accountId}:secret:app/mailgun-*
+        - Effect: Allow
+          Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:SendMessage
+              - sqs:GetQueueUrl
+          Resource:
+              - Fn::GetAtt:
+                    - MyQueue
+                    - Arn
+
+plugins:
+    - ./vendor/bref/bref
+
+functions:
+    api:
+        handler: public/index.php
+        description: ''
+        runtime: php-82-fpm
+        timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
+        events:
+            -   httpApi: '*'
+
+    hello:
+        handler: src/hello-function.php
+        description: 'Legacy hello function'
+        runtime: php-82
+        timeout: 10 # in seconds
+        memorySize: 128 # in MB
+        events:
+            - sqs:
+                arn:
+                    Fn::GetAtt:
+                        - MyQueue
+                        - Arn
+
+    bref-hello:
+        handler: src/EmailHandler.php
+        description: 'Bref-based hello function with better practices'
+        runtime: php-82
+        timeout: 10 # in seconds
+        memorySize: 128 # in MB
+        events:
+            - sqs:
+                arn:
+                    Fn::GetAtt:
+                        - MyQueue
+                        - Arn
+            # Uncomment and adjust the schedule examples below as needed:
+            # Run at 8 AM UTC every day
+            # - schedule: cron(0 8 * * ? *)
+
+            # Run at 10 PM UTC every Monday
+            # - schedule: cron(0 22 ? * MON *)
+
+            # Run every 2 hours
+            # - schedule: rate(2 hours)
+
+            # Run at specific time in São Paulo timezone (UTC-3)
+            # - schedule:
+            #     rate: cron(0 11 * * ? *)
+            #     timezone: America/Sao_Paulo
+
+            # Run with input parameters
+            # - schedule:
+            #     rate: cron(0 12 * * ? *)
+            #     input:
+            #         type: "scheduled"
+            #         action: "daily-report"
+            #         parameters:
+            #             name: "summary"
+            #             email: "admin@example.com"
+
+# Exclude files from deployment
+package:
+    patterns:
+        - '!node_modules/**'
+        - '!tests/**'
+        - '!docker/**'
+        - '!docker-compose.yml'
+
+resources:
+    Resources:
+        MyQueue:
+            Type: AWS::SQS::Queue
+            Properties:
+                QueueName: app-dev-hello-queue
