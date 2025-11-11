@@ -13,7 +13,7 @@ return function ($event) {
 
     $mg = Mailgun::create($_ENV['MAILGUN_API_KEY'] ?? '');
 
-    $link = 'https://daniel.satiro.me';
+    $link = $_ENV['CONTENT_LINK'] ?? 'https://daniel.satiro.me';
 
     $record = $event['Records'][0] ?? [];
     $body = isset($record['body']) ? json_decode($record['body'], true) : [];
