@@ -59,6 +59,10 @@ class EmailHandler extends SqsHandler
             throw new RuntimeException('Email is required in the message body');
         }
 
+        if (!filter_var($body['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException('Invalid email address: ' . $body['email']);
+        }
+
         $params = [
             'from'    => $this->fromEmail,
             'to'      => $body['email'],
@@ -91,10 +95,12 @@ class EmailHandler extends SqsHandler
                 <p>Olá, {$name}!</p>
                 <p>Obrigado por assistir Serverless com PHP.</p>
                 <p>Aqui está o <a href=\"{$this->link}\">link</a> para o conteúdo apresentado na palestra.</p>
+                <p>Visite meu perfil: <a href=\"https://about.me/danielsatiro\">about.me/danielsatiro</a></p>
                 <hr>
                 <p>Hello, {$name}!</p>
                 <p>Thank you for watching Serverless with PHP.</p>
                 <p>Here is the <a href=\"{$this->link}\">link</a> to the content presented in the talk.</p>
+                <p>Visit my profile: <a href=\"https://about.me/danielsatiro\">about.me/danielsatiro</a></p>
             </body>
             </html>
         ";
