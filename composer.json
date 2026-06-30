@@ -3,7 +3,7 @@
     "description": "PHP Serverless",
     "type": "project",
     "require": {
-        "bref/bref": "^2.4",
+        "bref/bref": "^3.0",
         "aws/aws-sdk-php": "^3.356",
         "monolog/monolog": "^3.9",
         "mailgun/mailgun-php": "^4.3",
